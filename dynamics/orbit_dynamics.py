@@ -12,7 +12,7 @@ def map_mtx_roe_to_rtn(oe):
 
     a = oe.item(0)
     u = oe.item(4) + oe.item(5)
-    n = np.sqrt(mu_E/a**3)
+    n = np.sqrt(mu_E/a**3) # mean motion
     
     map_1 = np.array([1, 0, -np.cos(u), -np.sin(u), 0, 0]).reshape((1,6))
     map_2 = np.array([0, 1, 2*np.sin(u), -2*np.cos(u), 0, 0]).reshape((1,6))

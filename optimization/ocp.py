@@ -144,7 +144,7 @@ def ocp_cvx(stm, cim, psi, s_0, n_time):
         
         prob.solve(solver=cp.MOSEK, verbose=False)
 
-        s_opt = s.value*a_ref
+        s_opt = s.value*a_ref 
         a_opt = a.value*a_ref*n_ref
 
     return s_opt, a_opt, prob.status

@@ -24,7 +24,7 @@ state_representation = 'rtn' # 'roe'/'rtn'
 dataset_to_use = 'both' # 'scp'/'cvx'/'both'
 transformer_ws = 'dyn' # 'dyn'/'ol'
 transformer_model_name = 'checkpoint_rtn_art'
-select_idx = True # set to True to manually select a test trajectory via its index (idx)
+select_idx = False # set to True to manually select a test trajectory via its index (idx)
 idx = 18111 # index of the test trajectory (e.g., idx = 18111)
 exclude_scp_cvx = False
 exclude_scp_DT = False
@@ -128,10 +128,45 @@ if warmstart == 'transformer' or warmstart == 'both':
         states_rtn_scp_DT = roe_to_rtn_horizon(states_roe_scp_DT_trg, oe_hrz_trg, n_time_rpod+1)
         constr_scp_DT, constr_viol_scp_DT = check_koz_constraint(states_rtn_scp_DT, n_time_rpod+1)
 
+
+# Get number of burns
+threshold_burn = 1e-3
+cvx_burns = np.where(la.norm(actions_cvx, axis=0) > threshold_burn)[0]
+cvx_scp_burns = np.where(la.norm(actions_scp_cvx, axis=0) > threshold_burn)[0]
+rtn_DT_burns = np.where(la.norm(actions_rtn_ws_DT, axis=0) > threshold_burn)[0]
+scp_DT_burns = np.where(la.norm(actions_scp_DT, axis=0) > threshold_burn)[0]
+
+print('Number of burns CVX:', cvx_burns.size)
+print('Number of burns SCP-CVX:', cvx_scp_burns.size)
+print('Number of burns ART:', rtn_DT_burns.size)
+print('Number of burns SCP-ART:', scp_DT_burns.size)
+
 # Plotting
 plt.style.use('seaborn-v0_8-colorblind')
 relativeorbit_0 = roe_to_relativeorbit(state_roe_0, oe_0_ref)
 t_ws_show = dock_wyp_sample
+
+fig = plt.figure(figsize=(12,6))
+pl1 = fig.add_subplot(2,2,1)
+pl1.plot(time_hrz_trg[0:-1]/period_ref, la.norm(actions_cvx, axis=0), 'k-', linewidth=1.5, label='CVX $\|a\|$')
+pl1.scatter(time_hrz_trg[cvx_burns]/period_ref, la.norm(actions_cvx[:,cvx_burns], axis=0), color='red', marker='x', s=80, label='CVX burns')
+pl1.legend(loc='best')
+pl2 = fig.add_subplot(2,2,2)
+pl2.plot(time_hrz_trg[0:-1]/period_ref, la.norm(actions_scp_cvx, axis=0), 'k-', linewidth=1.5, label='SCP-CVX $\|a\|$')
+pl2.scatter(time_hrz_trg[cvx_scp_burns]/period_ref, la.norm(actions_scp_cvx[:,cvx_scp_burns], axis=0), color='red', marker='x', s=80, label='SCP-CVX burns')
+pl2.legend(loc='best')
+pl3 = fig.add_subplot(2,2,3)
+pl3.plot(time_hrz_trg[0:-1]/period_ref, la.norm(actions_rtn_ws_DT, axis=0), 'b-', linewidth=1.5, label='ART $\|a\|$')
+pl3.scatter(time_hrz_trg[rtn_DT_burns]/period_ref, la.norm(actions_rtn_ws_DT[:,rtn_DT_burns], axis=0), color='red', marker='x', s=80, label='ART burns')
+pl3.legend(loc='best')
+pl4 = fig.add_subplot(2,2,4)
+pl4.plot(time_hrz_trg[0:-1]/period_ref, la.norm(actions_scp_DT, axis=0), 'b-', linewidth=1.5, label='SCP-ART $\|a\|$')
+pl4.scatter(time_hrz_trg[scp_DT_burns]/period_ref, la.norm(actions_scp_DT[:,scp_DT_burns], axis=0), color='red', marker='x', s=80, label='SCP-ART burns')
+pl4.legend(loc='best')
+
+plt.tight_layout()
+
+# plt.show()
 
 # 3D position trajectory'
 fig = plt.figure(figsize=(12,6))
