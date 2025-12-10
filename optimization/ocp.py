@@ -78,7 +78,7 @@ def ocp_cvx(stm, cim, psi, s_0, n_time):
 
         # Compute parameters
         s_f = state_roe_target
-        d_soc = -np.transpose(dock_axis).dot(dock_port)/np.cos(dock_cone_angle)
+        # d_soc = -np.transpose(dock_axis).dot(dock_port)/np.cos(dock_cone_angle)
 
         # Compute Constraints
         constraints = []
@@ -88,14 +88,14 @@ def ocp_cvx(stm, cim, psi, s_0, n_time):
         constraints += [s[:,i+1] == stm[:,:,i] @ (s[:,i] + cim[:,:,i] @ a[:,i]) for i in range(n_time-1)]
         # Terminal Condition
         constraints += [s[:,-1] + cim[:,:,-1] @ a[:,-1] == s_f]
-        # Docking waypoint
-        constraints += [psi[:,:,dock_wyp_sample] @ s[:,dock_wyp_sample] == dock_wyp]
-        # Approach cone
-        for j in range(dock_wyp_sample, n_time):
-            c_soc_j = np.transpose(dock_axis).dot(np.matmul(D_pos, psi[:,:,j]))/np.cos(dock_cone_angle)
-            A_soc_j = np.matmul(D_pos, psi[:,:,j])
-            b_soc_j = -dock_port
-            constraints += [cp.SOC(c_soc_j @ s[:,j] + d_soc, A_soc_j @ s[:,j] + b_soc_j)]
+        # # Docking waypoint
+        # constraints += [psi[:,:,dock_wyp_sample] @ s[:,dock_wyp_sample] == dock_wyp]
+        # # Approach cone
+        # for j in range(dock_wyp_sample, n_time):
+        #     c_soc_j = np.transpose(dock_axis).dot(np.matmul(D_pos, psi[:,:,j]))/np.cos(dock_cone_angle)
+        #     A_soc_j = np.matmul(D_pos, psi[:,:,j])
+        #     b_soc_j = -dock_port
+        #     constraints += [cp.SOC(c_soc_j @ s[:,j] + d_soc, A_soc_j @ s[:,j] + b_soc_j)]
     
         # Compute Cost
         cost = cp.sum(cp.norm(a, 2, axis=0))
@@ -111,12 +111,12 @@ def ocp_cvx(stm, cim, psi, s_0, n_time):
 
         # Compute normalized parameters
         cim_n = cim*n_ref
-        psi_norm_vect = np.array([1, 1, 1, 1/n_ref, 1/n_ref, 1/n_ref]).reshape(6,)
+        # psi_norm_vect = np.array([1, 1, 1, 1/n_ref, 1/n_ref, 1/n_ref]).reshape(6,)
         s_0_n = s_0/a_ref
         s_f_n = state_roe_target/a_ref
-        dock_wyp_n = np.multiply(dock_wyp, np.array([1/a_ref, 1/a_ref, 1/a_ref, 1/(a_ref*n_ref), 1/(a_ref*n_ref), 1/(a_ref*n_ref)]).reshape(6,))
-        dock_port_n = dock_port/a_ref
-        d_soc = -np.transpose(dock_axis).dot(dock_port_n)/np.cos(dock_cone_angle)
+        # dock_wyp_n = np.multiply(dock_wyp, np.array([1/a_ref, 1/a_ref, 1/a_ref, 1/(a_ref*n_ref), 1/(a_ref*n_ref), 1/(a_ref*n_ref)]).reshape(6,))
+        # dock_port_n = dock_port/a_ref
+        # d_soc = -np.transpose(dock_axis).dot(dock_port_n)/np.cos(dock_cone_angle)
 
         # Compute Constraints
         constraints = []
@@ -126,16 +126,16 @@ def ocp_cvx(stm, cim, psi, s_0, n_time):
         constraints += [s[:,i+1] == stm[:,:,i] @ (s[:,i] + cim_n[:,:,i] @ a[:,i]) for i in range(n_time-1)]
         # Terminal Condition
         constraints += [s[:,-1] + cim_n[:,:,-1] @ a[:,-1] == s_f_n]
-        # Docking waypoint
-        psi_wyp_n = psi[:,:,dock_wyp_sample]*psi_norm_vect[:, np.newaxis]
-        constraints += [psi_wyp_n @ s[:,dock_wyp_sample] == dock_wyp_n]
-        # Approach cone
-        for j in range(dock_wyp_sample, n_time):
-            psi_j_n = psi[:,:,j]*psi_norm_vect[:, np.newaxis]
-            c_soc_j = np.transpose(dock_axis).dot(np.matmul(D_pos, psi_j_n))/np.cos(dock_cone_angle)
-            A_soc_j = np.matmul(D_pos, psi_j_n)
-            b_soc_j = -dock_port_n
-            constraints += [cp.SOC(c_soc_j @ s[:,j] + d_soc, A_soc_j @ s[:,j] + b_soc_j)]
+        # # Docking waypoint
+        # psi_wyp_n = psi[:,:,dock_wyp_sample]*psi_norm_vect[:, np.newaxis]
+        # constraints += [psi_wyp_n @ s[:,dock_wyp_sample] == dock_wyp_n]
+        # # Approach cone
+        # for j in range(dock_wyp_sample, n_time):
+        #     psi_j_n = psi[:,:,j]*psi_norm_vect[:, np.newaxis]
+        #     c_soc_j = np.transpose(dock_axis).dot(np.matmul(D_pos, psi_j_n))/np.cos(dock_cone_angle)
+        #     A_soc_j = np.matmul(D_pos, psi_j_n)
+        #     b_soc_j = -dock_port_n
+        #     constraints += [cp.SOC(c_soc_j @ s[:,j] + d_soc, A_soc_j @ s[:,j] + b_soc_j)]
     
         # Compute Cost
         cost = cp.sum(cp.norm(a, 2, axis=0))
@@ -160,7 +160,7 @@ def ocp_scp(stm, cim, psi, s_0, s_ref, trust_region, n_time):
 
         # Compute parameters
         s_f = state_roe_target
-        d_soc = -np.transpose(dock_axis).dot(dock_port)/np.cos(dock_cone_angle)
+        # d_soc = -np.transpose(dock_axis).dot(dock_port)/np.cos(dock_cone_angle)
 
         # Compute Constraints
         constraints = []
@@ -170,21 +170,21 @@ def ocp_scp(stm, cim, psi, s_0, s_ref, trust_region, n_time):
         constraints += [s[:,i+1] == stm[:,:,i] @ (s[:,i] + cim[:,:,i] @ a[:,i]) for i in range(n_time-1)]
         # Terminal Condition
         constraints += [s[:,-1] + cim[:,:,-1] @ a[:,-1] == s_f]
-        # Docking waypoint
-        constraints += [psi[:,:,dock_wyp_sample] @ s[:,dock_wyp_sample] == dock_wyp]
-        # Approach cone
-        for j in range(dock_wyp_sample, n_time):
-            c_soc_j = np.transpose(dock_axis).dot(np.matmul(D_pos, psi[:,:,j]))/np.cos(dock_cone_angle)
-            A_soc_j = np.matmul(D_pos, psi[:,:,j])
-            b_soc_j = -dock_port
-            constraints += [cp.SOC(c_soc_j @ s[:,j] + d_soc, A_soc_j @ s[:,j] + b_soc_j)]
-        # Keep-out-zone plus trust region
-        for k in range(dock_wyp_sample):
-            c_koz_k = np.transpose(s_ref[:,k]).dot(np.matmul(np.transpose(psi[:,:,k]), np.matmul(DEED_koz, psi[:,:,k])))
-            b_koz_k = np.sqrt(c_koz_k.dot(s_ref[:,k]))
-            constraints += [c_koz_k @ s[:,k] >= b_koz_k]
-            b_soc_k = -s_ref[:,k]
-            constraints += [cp.SOC(trust_region, s[:,k] + b_soc_k)]
+        # # Docking waypoint
+        # constraints += [psi[:,:,dock_wyp_sample] @ s[:,dock_wyp_sample] == dock_wyp]
+        # # Approach cone
+        # for j in range(dock_wyp_sample, n_time):
+        #     c_soc_j = np.transpose(dock_axis).dot(np.matmul(D_pos, psi[:,:,j]))/np.cos(dock_cone_angle)
+        #     A_soc_j = np.matmul(D_pos, psi[:,:,j])
+        #     b_soc_j = -dock_port
+        #     constraints += [cp.SOC(c_soc_j @ s[:,j] + d_soc, A_soc_j @ s[:,j] + b_soc_j)]
+        # # Keep-out-zone plus trust region
+        # for k in range(dock_wyp_sample):
+        #     c_koz_k = np.transpose(s_ref[:,k]).dot(np.matmul(np.transpose(psi[:,:,k]), np.matmul(DEED_koz, psi[:,:,k])))
+        #     b_koz_k = np.sqrt(c_koz_k.dot(s_ref[:,k]))
+        #     constraints += [c_koz_k @ s[:,k] >= b_koz_k]
+        #     b_soc_k = -s_ref[:,k]
+        #     constraints += [cp.SOC(trust_region, s[:,k] + b_soc_k)]
     
         # Compute Cost
         cost = cp.sum(cp.norm(a, 2, axis=0))
@@ -199,16 +199,16 @@ def ocp_scp(stm, cim, psi, s_0, s_ref, trust_region, n_time):
     else:
 
         # Compute normalized parameters
-        s_ref_n = s_ref/a_ref
+        # s_ref_n = s_ref/a_ref
         cim_n = cim*n_ref
-        psi_norm_vect = np.array([1, 1, 1, 1/n_ref, 1/n_ref, 1/n_ref]).reshape(6,)
+        # psi_norm_vect = np.array([1, 1, 1, 1/n_ref, 1/n_ref, 1/n_ref]).reshape(6,)
         s_0_n = s_0/a_ref
         s_f_n = state_roe_target/a_ref
-        dock_wyp_n = np.multiply(dock_wyp, np.array([1/a_ref, 1/a_ref, 1/a_ref, 1/(a_ref*n_ref), 1/(a_ref*n_ref), 1/(a_ref*n_ref)]).reshape(6,))
-        dock_port_n = dock_port/a_ref
-        trust_region_n = trust_region/a_ref
-        d_soc = -np.transpose(dock_axis).dot(dock_port_n)/np.cos(dock_cone_angle)
-        DEED_koz_n = DEED_koz*a_ref**2
+        # dock_wyp_n = np.multiply(dock_wyp, np.array([1/a_ref, 1/a_ref, 1/a_ref, 1/(a_ref*n_ref), 1/(a_ref*n_ref), 1/(a_ref*n_ref)]).reshape(6,))
+        # dock_port_n = dock_port/a_ref
+        # trust_region_n = trust_region/a_ref
+        # d_soc = -np.transpose(dock_axis).dot(dock_port_n)/np.cos(dock_cone_angle)
+        # DEED_koz_n = DEED_koz*a_ref**2
 
         # Compute Constraints
         constraints = []
@@ -218,24 +218,24 @@ def ocp_scp(stm, cim, psi, s_0, s_ref, trust_region, n_time):
         constraints += [s[:,i+1] == stm[:,:,i] @ (s[:,i] + cim_n[:,:,i] @ a[:,i]) for i in range(n_time-1)]
         # Terminal Condition
         constraints += [s[:,-1] + cim_n[:,:,-1] @ a[:,-1] == s_f_n]
-        # Docking waypoint
-        psi_wyp_n = psi[:,:,dock_wyp_sample]*psi_norm_vect[:, np.newaxis]
-        constraints += [psi_wyp_n @ s[:,dock_wyp_sample] == dock_wyp_n]
-        # Approach cone
-        for j in range(dock_wyp_sample, n_time):
-            psi_j_n = psi[:,:,j]*psi_norm_vect[:, np.newaxis]
-            c_soc_j = np.transpose(dock_axis).dot(np.matmul(D_pos, psi_j_n))/np.cos(dock_cone_angle)
-            A_soc_j = np.matmul(D_pos, psi_j_n)
-            b_soc_j = -dock_port_n
-            constraints += [cp.SOC(c_soc_j @ s[:,j] + d_soc, A_soc_j @ s[:,j] + b_soc_j)]
-        # Keep-out-zone plus trust region
-        for k in range(dock_wyp_sample):
-            psi_k_n = psi[:,:,k]*psi_norm_vect[:, np.newaxis]
-            c_koz_k = np.transpose(s_ref_n[:,k]).dot(np.matmul(np.transpose(psi_k_n), np.matmul(DEED_koz_n, psi_k_n)))
-            b_koz_k = np.sqrt(c_koz_k.dot(s_ref_n[:,k]))
-            constraints += [c_koz_k @ s[:,k] >= b_koz_k]
-            b_soc_k = -s_ref_n[:,k]
-            constraints += [cp.SOC(trust_region_n, s[:,k] + b_soc_k)]
+        # # Docking waypoint
+        # psi_wyp_n = psi[:,:,dock_wyp_sample]*psi_norm_vect[:, np.newaxis]
+        # constraints += [psi_wyp_n @ s[:,dock_wyp_sample] == dock_wyp_n]
+        # # Approach cone
+        # for j in range(dock_wyp_sample, n_time):
+        #     psi_j_n = psi[:,:,j]*psi_norm_vect[:, np.newaxis]
+        #     c_soc_j = np.transpose(dock_axis).dot(np.matmul(D_pos, psi_j_n))/np.cos(dock_cone_angle)
+        #     A_soc_j = np.matmul(D_pos, psi_j_n)
+        #     b_soc_j = -dock_port_n
+        #     constraints += [cp.SOC(c_soc_j @ s[:,j] + d_soc, A_soc_j @ s[:,j] + b_soc_j)]
+        # # Keep-out-zone plus trust region
+        # for k in range(dock_wyp_sample):
+        #     psi_k_n = psi[:,:,k]*psi_norm_vect[:, np.newaxis]
+        #     c_koz_k = np.transpose(s_ref_n[:,k]).dot(np.matmul(np.transpose(psi_k_n), np.matmul(DEED_koz_n, psi_k_n)))
+        #     b_koz_k = np.sqrt(c_koz_k.dot(s_ref_n[:,k]))
+        #     constraints += [c_koz_k @ s[:,k] >= b_koz_k]
+        #     b_soc_k = -s_ref_n[:,k]
+        #     constraints += [cp.SOC(trust_region_n, s[:,k] + b_soc_k)]
     
         # Compute Cost
         cost = cp.sum(cp.norm(a, 2, axis=0))
