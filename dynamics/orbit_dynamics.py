@@ -9,7 +9,6 @@ mu_E = 3.986004415e+14
 
 # Functions
 def map_mtx_roe_to_rtn(oe):
-
     a = oe.item(0)
     u = oe.item(4) + oe.item(5)
     n = np.sqrt(mu_E/a**3) # mean motion
